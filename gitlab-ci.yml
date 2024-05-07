@@ -1,0 +1,57 @@
+stages:
+  - style_test
+  - build
+  - tests
+  - deploy
+
+style-job:
+  stage: style_test
+  script:
+    - chmod +x src
+    - bash src/cat/style_check.sh
+    - bash src/grep/style_check.sh
+    - echo -e "\033[95mCode Style - OK! ^_^\033[0m"
+  after_script:
+    - bash send_bot.sh
+  allow_failure: false
+
+
+build-job:
+  stage: build
+  script:
+    - cd src/cat
+    - make
+    - cd ../grep
+    - make
+    - echo -e "\033[95mCompile complete! ^_^\033[0m"
+  after_script:
+    - bash send_bot.sh
+  artifacts:
+    paths:
+      - src/cat
+      - src/grep
+    expire_in: 30 days
+  allow_failure: false
+
+tests-job:
+  stage: tests
+  script:
+    - chmod +x src
+    - bash src/cat/to_test_cat.sh
+    - bash src/grep/to_test_grep.sh
+    - echo -e "\033[95mTests - OK! ^_^\033[0m"
+  after_script:
+    - bash send_bot.sh
+  allow_failure: false
+
+
+deploy-job:
+  stage: deploy
+  when: manual
+  script:
+    - chmod +x src
+    - bash copy_artef.sh
+    - echo -e "\033[95mDeploy - OK! ^_^\033[0m"
+  after_script:
+    - bash send_bot.sh
+  allow_failure: false
